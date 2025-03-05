@@ -3,18 +3,25 @@
  * @ Author: godot42
  * @ Modified by: @godot42
  * @ Modified by: @godot42
- * @ Modified time: 2025-01-19 06:17:42
+ * @ Modified time: 2025-03-05 16:49:40
  * @ Description:
  */
 
-#include "string_utils.h"
+#include "utility/string_utils.h"
 #include <cstddef>
 #include <string_view>
 
 
-std::string string_replace(const std::string &source, const std::string &from, const std::string &to)
+
+namespace ut
 {
-    std::string ret = source;
+namespace str
+{
+
+
+std::string replace(std::string_view source, std::string_view from, const std::string_view to)
+{
+    std::string ret(source);
     size_t      pos = 0;
     while ((pos = ret.find(from, pos)) != std::string::npos) {
         ret.replace(pos, from.size(), to);
@@ -22,10 +29,6 @@ std::string string_replace(const std::string &source, const std::string &from, c
     }
     return ret;
 }
-
-namespace ut {
-namespace str {
-
 
 std::vector<std::string> split(std::string_view source, char delimiter)
 {
@@ -65,6 +68,20 @@ bool left(std::string_view source, char delimiter, std::string_view &left)
     left = source.substr(0, n);
     return true;
 }
+
+
+std::string trim(std::string_view source)
+{
+    while (std::isspace(*source.begin())) {
+        source.remove_prefix(1);
+    }
+    while (std::isspace(*source.end())) {
+        source.remove_suffix(1);
+    }
+    return {source.begin(), source.end()};
+}
+
+
 
 } // namespace str
 
