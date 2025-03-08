@@ -2,7 +2,7 @@
  * @ Author: godot42
  * @ Create Time: 2024-08-02 10:47:59
  * @ Modified by: @godot42
- * @ Modified time: 2025-03-05 17:28:24
+ * @ Modified time: 2025-03-07 16:34:28
  * @ Description:
  */
 
@@ -18,8 +18,10 @@
 
 namespace ut
 {
+namespace file
+{
 
-std::optional<std::string> file::read_all(const std::filesystem::path &filepath)
+std::optional<std::string> read_all(const std::filesystem::path &filepath)
 {
     static constexpr size_t FILE_MAX_SIZE = 1024 * 1024 * 128; // 128 MB
 
@@ -55,14 +57,14 @@ std::optional<std::string> file::read_all(const std::filesystem::path &filepath)
     return std::move(buffer);
 }
 
-bool file::is_image(const std::filesystem::path &filepath)
+bool is_image(const std::filesystem::path &filepath)
 {
     // TODO: read binary file type
     auto ext = filepath.filename().extension();
     return ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp";
 }
 
-std::optional<size_t> file::get_content_hash(const std::filesystem::path &filepath)
+std::optional<size_t> get_content_hash(const std::filesystem::path &filepath)
 {
     if (auto content = ut::file::read_all(filepath)) {
         return ut::file::get_hash(*content);
@@ -70,7 +72,7 @@ std::optional<size_t> file::get_content_hash(const std::filesystem::path &filepa
     return {};
 }
 
-std::optional<size_t> file::get_hash(const std::string &text)
+std::optional<size_t> get_hash(const std::string &text)
 {
 #if 1
     std::hash<std::string> hasher;
@@ -104,5 +106,6 @@ std::optional<size_t> file::get_hash(const std::string &text)
     return {};
 }
 
+} // namespace file
 
 } // namespace ut
