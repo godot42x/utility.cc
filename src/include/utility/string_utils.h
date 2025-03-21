@@ -3,7 +3,7 @@
  * @ Create Time: 2025-01-06 21:14:30
  * @ Modified by: @godot42
  * @ Modified by: @godot42
- * @ Modified time: 2025-03-05 17:09:25
+ * @ Modified time: 2025-03-22 00:31:12
  */
 
 
@@ -26,7 +26,7 @@ UTILITY_CC_API std::string replace(std::string_view source, std::string_view fro
 UTILITY_CC_API std::vector<std::string> split(std::string_view source, char delimiter = ' ');
 UTILITY_CC_API bool                     split(std::string_view source, char sep, std::string &left, std::string_view &right);
 UTILITY_CC_API std::string_view left(std::string_view source, std::string_view delimiter);
-UTILITY_CC_API std::string trim(std::string_view source);
+UTILITY_CC_API std::string_view trim(std::string_view source);
 } // namespace str
 
 

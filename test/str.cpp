@@ -9,5 +9,5 @@ int main()
     const char *a = "        bc     ";
 
     auto ret = ut::str::trim(a);
-    printf("%s\n", ret.c_str());
+    printf("%s\n", ret.data());
 }

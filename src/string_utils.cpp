@@ -3,7 +3,7 @@
  * @ Author: godot42
  * @ Modified by: @godot42
  * @ Modified by: @godot42
- * @ Modified time: 2025-03-05 16:49:40
+ * @ Modified time: 2025-03-22 00:31:14
  * @ Description:
  */
 
@@ -70,15 +70,17 @@ bool left(std::string_view source, char delimiter, std::string_view &left)
 }
 
 
-std::string trim(std::string_view source)
+std::string_view trim(std::string_view source)
 {
-    while (std::isspace(*source.begin())) {
-        source.remove_prefix(1);
+    if (source.empty())
+        return "";
+    int b = source.find_first_not_of(' ');
+    if (b == std::string::npos) {
+        return "";
     }
-    while (std::isspace(*source.end())) {
-        source.remove_suffix(1);
-    }
-    return {source.begin(), source.end()};
+    int  e   = source.find_last_not_of(' ');
+    auto ret = source.substr(b, e - b + 1);
+    return ret;
 }
 
 
