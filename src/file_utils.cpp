@@ -15,11 +15,15 @@
 #include <functional>
 #include <iostream>
 
+#include "debug.h"
+
 
 namespace ut
 {
 namespace file
 {
+
+
 
 std::optional<std::string> read_all(const std::filesystem::path &filepath)
 {
@@ -28,40 +32,116 @@ std::optional<std::string> read_all(const std::filesystem::path &filepath)
     // Open the file
     std::ifstream f(filepath, std::ios::binary | std::ios::ate);
     if (!f.is_open()) {
-        std::cerr << "Failed to open file: " << filepath << std::endl;
-        return {};
+        log(), "Failed to open file: ", filepath;
+        return std::nullopt;
     }
 
     // Get the size of the file
     std::streamsize file_size = f.tellg();
-    f.seekg(0, std::ios::beg);
-    if (file_size > FILE_MAX_SIZE) {
-        std::cerr << "File is too large: " << filepath << std::endl;
-        return {};
+
+    // Check for empty file
+    if (file_size <= 0) {
+        log(), "File is empty: ", filepath;
+        return std::string(); // Return empty string rather than nullopt for empty files
     }
 
+    // Check if file is too large
+    if (file_size > FILE_MAX_SIZE) {
+        log(), "exceed the max size of", FILE_MAX_SIZE, ", File is too large:", filepath;
+        return std::nullopt;
+    }
+
+    // Reset position to beginning of file
+    f.seekg(0, std::ios::beg);
 
     // Allocate memory to store the file content
     std::string buffer;
-    buffer.resize(file_size);
+    buffer.resize(static_cast<size_t>(file_size));
 
     // Read the file content into the allocated memory
     if (!f.read(buffer.data(), file_size)) {
-        std::cerr << "Failed to read file: " << filepath << std::endl;
-        return {};
+        log(), "Failed to read file: ", filepath; // Use consistent logging
+        return std::nullopt;
     }
+    // No need to explicitly close the file, RAII will handle it
 
-    // Close the file
-    f.close();
-
-    return std::move(buffer);
+    // Return the buffer directly, no std::move needed (copy elision will optimize this)
+    return buffer;
 }
 
-bool is_image(const std::filesystem::path &filepath)
+
+
+ImageInfo ImageInfo::detect(const std::filesystem::path &filepath)
 {
-    // TODO: read binary file type
-    auto ext = filepath.filename().extension();
-    return ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".bmp";
+
+    // Define image formats with their extensions and signatures
+    struct FormatData
+    {
+        std::string                extension;
+        std::vector<unsigned char> signature;
+        size_t                     sig_length;
+        ImageInfo::Format          format;
+        std::string                format_name;
+    };
+
+    const std::vector<FormatData> formats = {
+        {".png", {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A}, 8, ImageInfo::Format::PNG, "PNG"},
+        {".jpg", {0xFF, 0xD8, 0xFF}, 3, ImageInfo::Format::JPEG, "JPEG"},
+        {".jpeg", {0xFF, 0xD8, 0xFF}, 3, ImageInfo::Format::JPEG, "JPEG"},
+        {".bmp", {'B', 'M'}, 2, ImageInfo::Format::BMP, "BMP"},
+        {".gif", {'G', 'I', 'F', '8'}, 4, ImageInfo::Format::GIF, "GIF"},
+        {".webp", {'R', 'I', 'F', 'F', 0x00, 0x00, 0x00, 0x00, 'W', 'E', 'B', 'P'}, 12, ImageInfo::Format::WEBP, "WebP"},
+        {".tif", {0x49, 0x49, 0x2A, 0x00}, 4, ImageInfo::Format::TIFF, "TIFF"},
+        {".tiff", {0x4D, 0x4D, 0x00, 0x2A}, 4, ImageInfo::Format::TIFF, "TIFF"}};
+
+    // Initialize result
+    ImageInfo info;
+    info.file_path = filepath;
+
+    // Open the file to check signature
+    std::ifstream file(filepath, std::ios::binary);
+    if (!file) {
+        log(), "Failed to open file: ", filepath;
+        return info;
+    }
+
+    // Read enough bytes for the signature check (use largest signature size)
+    std::vector<unsigned char> header(12);
+    if (!file.read(reinterpret_cast<char *>(header.data()), header.size())) {
+        log(), "Failed to read file header: ", filepath;
+        return info;
+    }
+
+    // Get lowercase extension
+    auto ext = filepath.extension().string();
+    std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
+
+    // Check formats by signature first
+    for (const auto &fmt : formats) {
+        if (fmt.sig_length <= header.size() &&
+            std::equal(fmt.signature.begin(), fmt.signature.end(), header.begin())) {
+            info.format      = fmt.format;
+            info.format_name = fmt.format_name;
+            info.bValid      = true;
+            return info;
+        }
+    }
+
+    // If signature check failed, try extension as fallback
+    for (const auto &fmt : formats) {
+        if (ext == fmt.extension) {
+            info.format      = fmt.format;
+            info.format_name = fmt.format_name;
+            // Mark as not fully validated since we only matched by extension
+            info.bValid = false;
+            log(), "Warning: File extension suggests ", fmt.format_name,
+                " but signature doesn't match: ", filepath;
+            return info;
+        }
+    }
+
+    log(), "Unknown image format: ", filepath;
+    return info;
 }
 
 std::optional<size_t> get_content_hash(const std::filesystem::path &filepath)
@@ -105,6 +185,7 @@ std::optional<size_t> get_hash(const std::string &text)
 
     return {};
 }
+
 
 } // namespace file
 

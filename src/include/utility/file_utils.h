@@ -34,7 +34,36 @@ namespace file
 extern UTILITY_CC_API std::optional<std::string> read_all(const std::filesystem::path &filepath);
 // extern UTILITY_CC_API void                       read_all(const std::filesystem::path &filepath, std::optional<std::string> &ret);
 
-extern UTILITY_CC_API bool is_image(const std::filesystem::path &filepath);
+struct UTILITY_CC_API ImageInfo
+{
+    enum class Format
+    {
+        UNKNOWN,
+        PNG,
+        JPEG,
+        BMP,
+        GIF,
+        WEBP,
+        TIFF
+    };
+
+    Format                format = Format::UNKNOWN;
+    std::string           format_name;
+    std::filesystem::path file_path;
+    bool                  bValid = false;
+
+    bool is_png() const { return bValid && format == Format::PNG; }
+    bool is_jpeg() const { return bValid && format == Format::JPEG; }
+    bool is_bmp() const { return bValid && format == Format::BMP; }
+    bool is_gif() const { return bValid && format == Format::GIF; }
+    bool is_webp() const { return bValid && format == Format::WEBP; }
+    bool is_tiff() const { return bValid && format == Format::TIFF; }
+    bool is_valid() const { return bValid; }
+
+    static ImageInfo detect(const std::filesystem::path &filepath);
+};
+
+extern UTILITY_CC_API ImageInfo detect_image(const std::filesystem::path &filepath);
 
 
 extern UTILITY_CC_API std::optional<size_t> get_content_hash(const std::filesystem::path &filepath);
