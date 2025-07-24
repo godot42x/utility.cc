@@ -34,7 +34,7 @@ end
 
 
 do -- grab all cpp file under test folder as a target
-    local bDebug = true
+    local bDebug = false
     local test_files = os.files(os.scriptdir() .. "/test/*.cpp")
     for _, file in ipairs(test_files) do
         local name = path.basename(file)
