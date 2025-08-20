@@ -32,7 +32,7 @@ std::optional<std::string> read_all(const std::filesystem::path &filepath)
     // Open the file
     std::ifstream f(filepath, std::ios::binary | std::ios::ate);
     if (!f.is_open()) {
-        log(), "Failed to open file: ", filepath;
+        log(), " Failed to open file: ", filepath;
         return std::nullopt;
     }
 
