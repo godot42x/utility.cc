@@ -83,6 +83,41 @@ std::string_view trim(std::string_view source)
     return ret;
 }
 
+UTILITY_CC_API std::string toLower(std::string_view source)
+{
+    std::string ret(source);
+    for (char &c : ret) {
+        if (c >= 'A' && c <= 'Z') {
+            c = c - 'A' + 'a';
+        }
+    }
+    return ret;
+}
+
+UTILITY_CC_API std::string toUpper(std::string_view source)
+{
+    std::string ret(source);
+    for (char &c : ret) {
+        if (c >= 'a' && c <= 'z') {
+            c = c - 'a' + 'A';
+        }
+    }
+    return ret;
+}
+
+UTILITY_CC_API std::string concat(std::vector<std::string_view> source, const std::string_view delimiter)
+{
+    std::string ret;
+    ret.reserve(source.size() * 8);
+    for (size_t i = 0; i < source.size(); ++i) {
+        ret.append(source[i]);
+        if (i < source.size() - 1) {
+            ret.append(delimiter);
+        }
+    }
+    return ret;
+}
+
 
 
 } // namespace str

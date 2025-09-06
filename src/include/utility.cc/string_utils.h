@@ -27,6 +27,9 @@ UTILITY_CC_API std::vector<std::string> split(std::string_view source, char deli
 UTILITY_CC_API bool                     split(std::string_view source, char sep, std::string &left, std::string_view &right);
 UTILITY_CC_API std::string_view left(std::string_view source, std::string_view delimiter);
 UTILITY_CC_API std::string_view trim(std::string_view source);
+UTILITY_CC_API std::string toLower(std::string_view source);
+UTILITY_CC_API std::string toUpper(std::string_view source);
+UTILITY_CC_API std::string concat(std::vector<std::string_view> source, const std::string_view delimiter = "");
 } // namespace str
 
 
