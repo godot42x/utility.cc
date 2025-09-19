@@ -9,6 +9,8 @@
 namespace ut
 {
 
+namespace detail
+{
 // A struct to hold the index and a reference to the element.
 template <typename T>
 struct indexed_value
@@ -66,28 +68,39 @@ class enumerating_iterator
     size_t                            m_index;
 };
 
-// A wrapper struct to create the "range".
-template <typename T>
-class enumerate_range
+template <typename Value, template <typename> typename Container>
+    requires requires(Container<Value> c) {
+        typename Container<Value>::iterator;
+        typename Container<Value>::size_type;
+    }
+struct enumerate_range
 {
-  public:
-    enumerate_range(std::vector<T> &data) : m_data(data) {}
+    Container<Value> &m_data; // requires forward iterator
 
-    // Methods that return the custom iterators.
-    ut::enumerating_iterator<T> begin() { return enumerating_iterator<T>(m_data.begin(), 0); }
-    ut::enumerating_iterator<T> end() { return enumerating_iterator<T>(m_data.end(), m_data.size()); }
+    enumerate_range(Container<Value> &data) : m_data(data) {}
 
-  private:
-    std::vector<T> &m_data;
+    enumerating_iterator<Value> begin() { return enumerating_iterator<Value>(m_data.begin(), 0); }
+    enumerating_iterator<Value> end() { return enumerating_iterator<Value>(m_data.end(), m_data.size()); }
 };
 
 
-
-// A helper function to make it easy to create the range.
-template <typename T>
-enumerate_range<T> enumerate(std::vector<T> &data)
+struct enumerate_adaptor
 {
-    return enumerate_range<T>(data);
+    template <typename Range>
+    auto operator()(Range &&range) const
+    {
+        return enumerate_range(std::forward<Range>(range));
+    }
+};
+
+} // namespace detail
+
+inline constexpr detail::enumerate_adaptor enumerate;
+
+template <typename Range>
+auto operator|(Range &&range, const detail::enumerate_adaptor &adapter)
+{
+    return adapter(std::forward<Range>(range));
 }
 
 
@@ -98,6 +111,11 @@ namespace test
 inline int test()
 {
     std::vector<std::string> fruits = {"apple", "banana", "cherry"};
+
+    for (auto &&[index, fruit] : fruits | enumerate) {
+    }
+    ut::enumerate(fruits);
+
 
     for (auto &&[index, fruit] : ut::enumerate(fruits)) {
         std::cout << "Index: " << index << ", Value: " << fruit << std::endl;
