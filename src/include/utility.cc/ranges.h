@@ -1,8 +1,8 @@
 #pragma once
 
-
 #include <iostream>
 #include <iterator>
+#include <type_traits>
 #include <vector>
 
 
@@ -19,19 +19,18 @@ struct indexed_value
     T     &value;
 };
 
-// A custom iterator that moves through the vector, updating the index.
-template <typename T>
+// A custom iterator that moves through the container, updating the index.
+template <typename Iterator>
 class enumerating_iterator
 {
   public:
-    // Required to make the iterator usable.
-    using iterator_category = std::random_access_iterator_tag;
+    using iterator_category = std::forward_iterator_tag;
     using difference_type   = std::ptrdiff_t;
-    using value_type        = indexed_value<T>;
+    using value_type        = indexed_value<typename std::iterator_traits<Iterator>::value_type>;
     using pointer           = value_type *;
     using reference         = value_type;
 
-    enumerating_iterator(typename std::vector<T>::iterator it, size_t index)
+    enumerating_iterator(Iterator it, size_t index)
         : m_it(it), m_index(index) {}
 
     // Dereference operator.
@@ -64,32 +63,34 @@ class enumerating_iterator
     }
 
   private:
-    typename std::vector<T>::iterator m_it;
-    size_t                            m_index;
+    Iterator m_it;
+    size_t   m_index;
 };
 
-template <typename Value, template <typename> typename Container>
-    requires requires(Container<Value> c) {
-        typename Container<Value>::iterator;
-        typename Container<Value>::size_type;
-    }
+template <typename Range>
 struct enumerate_range
 {
-    Container<Value> &m_data; // requires forward iterator
+    Range &m_range;
 
-    enumerate_range(Container<Value> &data) : m_data(data) {}
+    enumerate_range(Range &range) : m_range(range) {}
 
-    enumerating_iterator<Value> begin() { return enumerating_iterator<Value>(m_data.begin(), 0); }
-    enumerating_iterator<Value> end() { return enumerating_iterator<Value>(m_data.end(), m_data.size()); }
+    auto begin()
+    {
+        return enumerating_iterator(m_range.begin(), 0);
+    }
+
+    auto end()
+    {
+        return enumerating_iterator(m_range.end(), std::distance(m_range.begin(), m_range.end()));
+    }
 };
-
 
 struct enumerate_adaptor
 {
     template <typename Range>
     auto operator()(Range &&range) const
     {
-        return enumerate_range(std::forward<Range>(range));
+        return enumerate_range<std::remove_reference_t<Range>>(std::forward<Range>(range));
     }
 };
 
@@ -103,8 +104,6 @@ auto operator|(Range &&range, const detail::enumerate_adaptor &adapter)
     return adapter(std::forward<Range>(range));
 }
 
-
-
 namespace test
 {
 // Example usage
@@ -113,11 +112,10 @@ inline int test()
     std::vector<std::string> fruits = {"apple", "banana", "cherry"};
 
     for (auto &&[index, fruit] : fruits | enumerate) {
+        std::cout << "Index: " << index << ", Value: " << fruit << std::endl;
     }
-    ut::enumerate(fruits);
 
-
-    for (auto &&[index, fruit] : ut::enumerate(fruits)) {
+    for (auto &&[index, fruit] : enumerate(fruits)) {
         std::cout << "Index: " << index << ", Value: " << fruit << std::endl;
     }
 
