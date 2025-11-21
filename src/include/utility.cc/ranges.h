@@ -98,14 +98,23 @@ struct enumerate_adaptor
 
 inline constexpr detail::enumerate_adaptor enumerate;
 
+
+}; // namespace ut
+
+
+
+// operator| must be in the same namespace as enumerate for ADL to work
 template <typename Range>
-auto operator|(Range &&range, const detail::enumerate_adaptor &adapter)
+auto operator|(Range &&range, const ut::detail::enumerate_adaptor &adapter)
 {
     return adapter(std::forward<Range>(range));
 }
 
 namespace test
 {
+
+using namespace ut;
+
 // Example usage
 inline int test()
 {
@@ -128,8 +137,15 @@ inline int test()
         std::cout << fruit << std::endl;
     }
 
+    struct VkImage_T;
+    using VkImage = VkImage_T *;
+
+    std::vector<VkImage> images = {reinterpret_cast<VkImage>(1), reinterpret_cast<VkImage>(2), reinterpret_cast<VkImage>(3)};
+    for (auto &&[i, img] : images | enumerate) {
+        std::cout << "Image " << i << ": " << img << std::endl;
+    }
+
+
     return 0;
 }
 } // namespace test
-
-} // namespace ut
