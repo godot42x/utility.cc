@@ -63,10 +63,23 @@ struct UTILITY_CC_API ImageInfo
     static ImageInfo detect(const std::filesystem::path &filepath);
 };
 
-extern UTILITY_CC_API ImageInfo detect_image(const std::filesystem::path &filepath);
 
 
 extern UTILITY_CC_API std::optional<size_t> get_content_hash(const std::filesystem::path &filepath);
 extern UTILITY_CC_API std::optional<size_t> get_hash(const std::string &text);
+
+
 }; // namespace file
+
+/*
+wrapper for not export each function
+*/
+struct UTILITY_CC_API FileUtils
+{
+    static std::optional<std::string> read_all(const std::filesystem::path &filepath) { return ::ut::file::read_all(filepath); };
+    static file::ImageInfo            detect_image(const std::filesystem::path &filepath) { return ::ut::file::ImageInfo::detect(filepath); }
+    static std::optional<size_t>      get_content_hash(const std::filesystem::path &filepath) { return file::get_content_hash(filepath); }
+    static std::optional<size_t>      get_hash(const std::string &text) { return file::get_hash(text); }
+};
+
 } // namespace ut

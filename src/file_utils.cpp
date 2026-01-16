@@ -85,14 +85,14 @@ ImageInfo ImageInfo::detect(const std::filesystem::path &filepath)
     };
 
     const std::vector<FormatData> formats = {
-        {".png", {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A}, 8, ImageInfo::Format::PNG, "PNG"},
-        {".jpg", {0xFF, 0xD8, 0xFF}, 3, ImageInfo::Format::JPEG, "JPEG"},
-        {".jpeg", {0xFF, 0xD8, 0xFF}, 3, ImageInfo::Format::JPEG, "JPEG"},
-        {".bmp", {'B', 'M'}, 2, ImageInfo::Format::BMP, "BMP"},
-        {".gif", {'G', 'I', 'F', '8'}, 4, ImageInfo::Format::GIF, "GIF"},
-        {".webp", {'R', 'I', 'F', 'F', 0x00, 0x00, 0x00, 0x00, 'W', 'E', 'B', 'P'}, 12, ImageInfo::Format::WEBP, "WebP"},
-        {".tif", {0x49, 0x49, 0x2A, 0x00}, 4, ImageInfo::Format::TIFF, "TIFF"},
-        {".tiff", {0x4D, 0x4D, 0x00, 0x2A}, 4, ImageInfo::Format::TIFF, "TIFF"}};
+        {.extension = ".png", .signature = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A}, .sig_length = 8, .format = ImageInfo::Format::PNG, .format_name = "PNG"},
+        {.extension = ".jpg", .signature = {0xFF, 0xD8, 0xFF}, .sig_length = 3, .format = ImageInfo::Format::JPEG, .format_name = "JPEG"},
+        {.extension = ".jpeg", .signature = {0xFF, 0xD8, 0xFF}, .sig_length = 3, .format = ImageInfo::Format::JPEG, .format_name = "JPEG"},
+        {.extension = ".bmp", .signature = {'B', 'M'}, .sig_length = 2, .format = ImageInfo::Format::BMP, .format_name = "BMP"},
+        {.extension = ".gif", .signature = {'G', 'I', 'F', '8'}, .sig_length = 4, .format = ImageInfo::Format::GIF, .format_name = "GIF"},
+        {.extension = ".webp", .signature = {'R', 'I', 'F', 'F', 0x00, 0x00, 0x00, 0x00, 'W', 'E', 'B', 'P'}, .sig_length = 12, .format = ImageInfo::Format::WEBP, .format_name = "WebP"},
+        {.extension = ".tif", .signature = {0x49, 0x49, 0x2A, 0x00}, .sig_length = 4, .format = ImageInfo::Format::TIFF, .format_name = "TIFF"},
+        {.extension = ".tiff", .signature = {0x4D, 0x4D, 0x00, 0x2A}, .sig_length = 4, .format = ImageInfo::Format::TIFF, .format_name = "TIFF"}};
 
     // Initialize result
     ImageInfo info;
