@@ -99,6 +99,83 @@ struct enumerate_adaptor
 inline constexpr detail::enumerate_adaptor enumerate;
 
 
+namespace ranges
+{
+
+namespace detail
+{
+
+template <typename Iterator>
+struct inverse_iterator
+{
+    Iterator m_it;
+
+    inverse_iterator(Iterator it) : m_it(it) {}
+
+    auto operator*() -> decltype(*m_it)
+    {
+        return *m_it;
+    }
+
+    inverse_iterator &operator++()
+    {
+        --m_it;
+        return *this;
+    }
+
+    inverse_iterator operator++(int)
+    {
+        inverse_iterator tmp = *this;
+        ++(*this);
+        return tmp;
+    }
+
+    friend bool operator==(const inverse_iterator &a, const inverse_iterator &b)
+    {
+        return a.m_it == b.m_it;
+    }
+
+    friend bool operator!=(const inverse_iterator &a, const inverse_iterator &b)
+    {
+        return a.m_it != b.m_it;
+    }
+};
+
+template <typename Range>
+struct inverse_range
+{
+    Range &m_range;
+
+    inverse_range(Range &range) : m_range(range) {}
+
+    auto begin()
+    {
+        return inverse_iterator(m_range.end());
+    }
+
+    auto end()
+    {
+        return inverse_iterator(m_range.begin());
+    }
+};
+
+struct inverse_adaptor
+{
+    template <typename Range>
+    auto operator()(Range &&range) const
+    {
+        return inverse_range<std::remove_reference_t<Range>>(std::forward<Range>(range));
+    }
+};
+
+} // namespace detail
+
+inline constexpr detail::inverse_adaptor inverse;
+
+}; // namespace ranges
+
+
+
 }; // namespace ut
 
 
@@ -106,6 +183,12 @@ inline constexpr detail::enumerate_adaptor enumerate;
 // operator| must be in the same namespace as enumerate for ADL to work
 template <typename Range>
 auto operator|(Range &&range, const ut::detail::enumerate_adaptor &adapter)
+{
+    return adapter(std::forward<Range>(range));
+}
+
+template <typename Range>
+auto operator|(Range &&range, const ut::ranges::detail::inverse_adaptor &adapter)
 {
     return adapter(std::forward<Range>(range));
 }
@@ -120,7 +203,7 @@ inline int test()
 {
     std::vector<std::string> fruits = {"apple", "banana", "cherry"};
 
-    for (auto &&[index, fruit] : fruits | enumerate) {
+    for (auto &&[index, fruit] : fruits | ut::enumerate) {
         std::cout << "Index: " << index << ", Value: " << fruit << std::endl;
     }
 
