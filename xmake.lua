@@ -19,6 +19,11 @@ do
         add_defines("UTILITY_DEBUG_ENABLED")
     end
 
+    if is_plat("windows") then
+        add_cxflags(
+            "/utf-8" --  Enable UTF-8 source code support for Unicode characters
+        )
+    end
 
     on_config(function(target)
         if is_host("window") then

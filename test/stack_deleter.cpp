@@ -1,4 +1,3 @@
-
 #include <cassert>
 #include <iostream>
 
@@ -37,12 +36,12 @@ class DatabaseConnection
   public:
     DatabaseConnection()
     {
-        std::cout << "建立数据库连接" << std::endl;
+        std::cout << "Database connection established" << std::endl;
     }
 
     ~DatabaseConnection()
     {
-        std::cout << "关闭数据库连接" << std::endl;
+        std::cout << "Database connection closed" << std::endl;
     }
 };
 
@@ -51,48 +50,56 @@ class NetworkManager
   public:
     NetworkManager()
     {
-        std::cout << "初始化网络管理器" << std::endl;
+        std::cout << "Network manager initialized" << std::endl;
     }
 
     ~NetworkManager()
     {
-        std::cout << "关闭网络管理器" << std::endl;
+        std::cout << "Network manager closed" << std::endl;
     }
 };
 
 void demonstrateStackDeleter()
 {
-    std::cout << "\n=== StackDeleter 演示开始 ===" << std::endl;
+    std::cout << "\n=== StackDeleter演示开始 ===" << std::endl;
 
     {
         ut::StackDeleter deleter;
 
-        // 创建资源并注册到删除器
+        // Create resources and register to deleter
         auto *db = new DatabaseConnection();
-        deleter.push("Database", db);
+        deleter.push("Database", db, [](void *ptr) {
+            delete static_cast<DatabaseConnection*>(ptr);
+        });
 
         auto *network = new NetworkManager();
-        deleter.push("Network", network);
+        deleter.push("Network", network, [](void *ptr) {
+            delete static_cast<NetworkManager*>(ptr);
+        });
 
         auto *resource1 = new TestResource("Resource1");
-        deleter.push("TestResource1", resource1);
+        deleter.push("TestResource1", resource1, [](void *ptr) {
+            delete static_cast<TestResource*>(ptr);
+        });
 
         auto *resource2 = new TestResource("Resource2");
-        deleter.push(resource2); // 使用自动命名
+        deleter.push("TestResource2", resource2, [](void *ptr) {
+            delete static_cast<TestResource*>(ptr);
+        });
 
         // 添加自定义清理逻辑
-        deleter.push_custom("Custom Cleanup", []() {
-            std::cout << "--->执行自定义清理逻辑" << std::endl;
+        deleter.push("Custom Cleanup", [](void *) {
+            std::cout << "---> Executing custom cleanup logic" << std::endl;
         });
 
         std::cout << "\n当前管理的资源数量: " << deleter.size() << std::endl;
-        std::cout << "当前TestResource实例数: " << TestResource::getInstanceCount() << std::endl;
+        std::cout << "当前TestResource实例数量: " << TestResource::getInstanceCount() << std::endl;
 
-        std::cout << "\n即将离开作用域, 开始自动清理..." << std::endl;
-    } // deleter 在这里析构，按照LIFO顺序清理所有资源
+        std::cout << "\n离开作用域，开始自动清理..." << std::endl;
+    } // deleter destructs here, cleaning all resources in LIFO order
 
-    std::cout << "\n清理完成,剩余TestResource实例数: " << TestResource::getInstanceCount() << std::endl;
-    std::cout << "=== StackDeleter 演示结束 ===\n"
+    std::cout << "\n清理完成，剩余TestResource实例数量: " << TestResource::getInstanceCount() << std::endl;
+    std::cout << "=== StackDeleter演示结束 ===\n"
               << std::endl;
 }
 
@@ -102,26 +109,30 @@ void demonstrateManualClear()
 
     ut::StackDeleter deleter;
 
-    auto *resource1 = new TestResource("Manual1");
-    auto *resource2 = new TestResource("Manual2");
+    auto *resource1 = new TestResource("手动资源1");
+    auto *resource2 = new TestResource("手动资源2");
 
-    deleter.push("Manual Resource 1", resource1);
-    deleter.push("Manual Resource 2", resource2);
+    deleter.push("手动资源 1", resource1, [](void *ptr) {
+        delete static_cast<TestResource*>(ptr);
+    });
+    deleter.push("手动资源 2", resource2, [](void *ptr) {
+        delete static_cast<TestResource*>(ptr);
+    });
 
-    std::cout << "添加资源后，实例数: " << TestResource::getInstanceCount() << std::endl;
+    std::cout << "添加资源后，实例数量: " << TestResource::getInstanceCount() << std::endl;
 
     // 手动清理
     std::cout << "执行手动清理..." << std::endl;
     deleter.clear();
 
-    std::cout << "手动清理完成，实例数: " << TestResource::getInstanceCount() << std::endl;
+    std::cout << "手动清理完成，实例数量: " << TestResource::getInstanceCount() << std::endl;
     std::cout << "=== 手动清理演示结束 ===\n"
               << std::endl;
 }
 
 int main()
 {
-    std::cout << "栈式指针管理器 (StackDeleter) 测试程序\n"
+    std::cout << "StackDeleter测试程序\n"
               << std::endl;
 
     // 演示自动清理
@@ -132,7 +143,7 @@ int main()
 
     // 验证所有资源都被正确清理
     assert(TestResource::getInstanceCount() == 0);
-    std::cout << "✅ 所有测试通过！所有资源都被正确清理。" << std::endl;
+    std::cout << "所有测试通过！所有资源都被正确清理。" << std::endl;
 
     return 0;
 }

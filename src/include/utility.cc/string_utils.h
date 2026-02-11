@@ -9,9 +9,11 @@
 
 #pragma once
 
+#include <format>
 #include <string>
 #include <string_view>
 #include <vector>
+
 
 #include "plat.h"
 
@@ -30,6 +32,27 @@ UTILITY_CC_API std::string_view trim(std::string_view source);
 UTILITY_CC_API std::string toLower(std::string_view source);
 UTILITY_CC_API std::string toUpper(std::string_view source);
 UTILITY_CC_API std::string concat(std::vector<std::string_view> source, const std::string_view delimiter = "");
+
+template <typename T>
+std::string join(const T &container, const std::string_view delimiter = "")
+{
+    std::string result;
+    for (auto it = container.begin(); it != container.end(); ++it)
+    {
+        if (it != container.begin())
+        {
+            result += delimiter;
+        }
+        if (!it) {
+            continue;
+        }
+        if constexpr (requires { std::to_string(*it)->std::string; })
+        {
+            result += std::format("{}", *it);
+        }
+    }
+    return result;
+}
 } // namespace str
 
 
