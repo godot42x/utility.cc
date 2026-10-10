@@ -16,6 +16,8 @@
 #include <iostream>
 
 #include "debug.h"
+#include <algorithm>
+#include <cctype>
 
 
 namespace ut

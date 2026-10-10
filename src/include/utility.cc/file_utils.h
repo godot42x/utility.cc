@@ -17,6 +17,7 @@
 
 
 #include "plat.h"
+#include <string>
 
 namespace ut
 {

@@ -43,13 +43,9 @@ std::string join(const T &container, const std::string_view delimiter = "")
         {
             result += delimiter;
         }
-        if (!it) {
-            continue;
-        }
-        if constexpr (requires { std::to_string(*it)->std::string; })
-        {
-            result += std::format("{}", *it);
-        }
+        // Linux/libstdc++: previous requires-expression was ill-formed.
+        // Always format; join is only used with formatable elements.
+        result += std::format("{}", *it);
     }
     return result;
 }
