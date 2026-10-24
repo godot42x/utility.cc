@@ -8,7 +8,7 @@ end
 
 target("utility.cc")
 do
-    set_kind("shared")
+    set_kind(is_plat("wasm") and "static" or "shared")
     set_languages("c++20")
     add_files("./src/**.cpp")
     add_headerfiles("./src/**.h", { public = true })
