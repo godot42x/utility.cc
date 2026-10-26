@@ -19,7 +19,7 @@ namespace ut
  *
  * 启用调试日志：
  * - 编译时：使用 xmake config --utility_debug=true 来启用调试日志
- * - 这将定义 UTILITY_DEBUG_ENABLED 宏，从而输出清理和添加操作的日志
+ * - 这将定义 UTILITY_CC_DEBUG 宏，从而输出清理和添加操作的日志
  */
 class StackDeleter
 {
@@ -40,7 +40,7 @@ class StackDeleter
     template <typename T>
     T *push(const std::string &name, T *handle, std::function<void(void *)> deleter)
     {
-#ifdef UTILITY_DEBUG_ENABLED
+#ifdef UTILITY_CC_DEBUG
         fprintf(stderr, "[StackDeleter] Adding custom deleter %s for management\n", name.c_str());
 #endif
         _items.push_back(DeleterItem{
@@ -53,7 +53,7 @@ class StackDeleter
 
     void push(const std::string &name, std::function<void(void *)> deleter)
     {
-#ifdef UTILITY_DEBUG_ENABLED
+#ifdef UTILITY_CC_DEBUG
         fprintf(stderr, "[StackDeleter] Adding custom deleter %s for management\n", name.c_str());
 #endif
         _items.push_back(DeleterItem{
@@ -67,7 +67,7 @@ class StackDeleter
     { // 按相反顺序删除（LIFO - 后进先出）
         for (auto it = _items.rbegin(); it != _items.rend(); ++it) {
             try {
-#ifdef UTILITY_DEBUG_ENABLED
+#ifdef UTILITY_CC_DEBUG
                 fprintf(stderr, "[StackDeleter] Deleting %s\n", it->name.c_str());
 #endif
                 it->deleter(it->handle);
@@ -75,7 +75,7 @@ class StackDeleter
             catch (...) {
                 // 在析构过程中不应该抛出异常
                 // 可以在这里记录错误日志
-#ifdef UTILITY_DEBUG_ENABLED
+#ifdef UTILITY_CC_DEBUG
                 fprintf(stderr, "[StackDeleter] Error during deletion of %s\n", it->name.c_str());
 #else
                 fprintf(stderr, "[StackDeleter] Error during deletion\n");

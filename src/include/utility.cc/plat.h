@@ -2,7 +2,7 @@
 
 
 #if _WIN32
-    #ifdef BUILD_SHARED_UTILITY_CC
+    #ifdef UTILITY_CC_BUILD_SHARED
         #define UTILITY_CC_API __declspec(dllexport)
     #else
         #define UTILITY_CC_API __declspec(dllimport)

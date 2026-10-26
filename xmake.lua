@@ -16,7 +16,7 @@ do
 
     -- 根据 debug 选项设置宏定义
     if has_config("utility_debug") then
-        add_defines("UTILITY_DEBUG_ENABLED")
+        add_defines("UTILITY_CC_DEBUG")
     end
 
     if is_plat("windows") then
@@ -28,10 +28,9 @@ do
     on_config(function(target)
         if is_host("window") then
             if target:get("kind") == "shared" then
-                print(target:name(), "with microshit rule >>")
-                local normalizeName = target:name():upper():replace("%.", '_')
-                print("normalizedName:", normalizeName)
-                target:add("defines", "BUILD_SHARED_" .. normalizeName .. "=1")
+                -- Literal for the same reason as log.cc/xmake.lua: emitter and the reader in
+                -- src/include/utility.cc/plat.h are one string a grep can match.
+                target:add("defines", "UTILITY_CC_BUILD_SHARED=1")
             end
         end
     end)
